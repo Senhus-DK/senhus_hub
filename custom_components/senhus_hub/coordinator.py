@@ -66,13 +66,6 @@ class SenhusHubCoordinator:
         if self._client:
             await self._client.disconnect()
 
-    async def async_options_updated(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
-        """Called when user saves new options. Push updated config to device."""
-        await self._push_layout()
-        await self._push_labels_and_units()
-        await self._push_all_current_values()
-        self._subscribe_ha_states()
-
     # ── ESPHome connection callbacks ─────────────────────────────────────────
 
     async def _on_connect(self) -> None:

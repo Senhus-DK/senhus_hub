@@ -7,7 +7,7 @@ import voluptuous as vol
 from aioesphomeapi import APIClient, APIConnectionError, InvalidAuthAPIError
 
 from homeassistant.components import zeroconf
-from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlowWithReload
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_PASSWORD
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
@@ -34,14 +34,9 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 _SLOT_DEFAULTS = {
-    SLOT_LEFT:         {CONF_LABEL: "Price",  CONF_UNIT: ""},
-    SLOT_RIGHT_TOP:    {CONF_LABEL: "Solar",  CONF_UNIT: "W"},
-    SLOT_RIGHT_BOTTOM: {CONF_LABEL: "Grid",   CONF_UNIT: "W"},
-}
-
-_LAYOUT_LABELS = {
-    "default":    "Default — 1 large left + 2 small right",
-    "three_rows": "Three rows — equal stacked rows",
+    SLOT_LEFT:         {CONF_LABEL: "Price", CONF_UNIT: ""},
+    SLOT_RIGHT_TOP:    {CONF_LABEL: "Solar", CONF_UNIT: "W"},
+    SLOT_RIGHT_BOTTOM: {CONF_LABEL: "Grid",  CONF_UNIT: "W"},
 }
 
 
@@ -70,7 +65,6 @@ async def _try_connect(host: str, port: int, password: str) -> tuple[str | None,
         _LOGGER.exception("Unexpected error connecting to %s", host)
         return "unknown", None
 
-    # Verify it's a Senhus device — project_name must start with the prefix
     if not (info.project_name and info.project_name.startswith(PROJECT_NAME_PREFIX)):
         return "not_senhus_hub", None
 
@@ -109,7 +103,9 @@ class SenhusHubConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=vol.Schema({
                 vol.Required(CONF_HOST): selector.TextSelector(),
                 vol.Optional(CONF_PORT, default=DEFAULT_PORT): selector.NumberSelector(
-                    selector.NumberSelectorConfig(min=1, max=65535, mode=selector.NumberSelectorMode.BOX)
+                    selector.NumberSelectorConfig(
+                        min=1, max=65535, mode=selector.NumberSelectorMode.BOX
+                    )
                 ),
                 vol.Optional(CONF_PASSWORD, default=""): selector.TextSelector(
                     selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
@@ -123,8 +119,6 @@ class SenhusHubConfigFlow(ConfigFlow, domain=DOMAIN):
         self._port = discovery_info.port or DEFAULT_PORT
         props = discovery_info.properties
 
-        # Reject non-Senhus devices via mDNS TXT record before connecting.
-        # Handle both str and bytes keys depending on HA/zeroconf version.
         project_name = props.get("project_name") or props.get(b"project_name") or ""
         if isinstance(project_name, bytes):
             project_name = project_name.decode("utf-8", errors="ignore")
@@ -139,9 +133,7 @@ class SenhusHubConfigFlow(ConfigFlow, domain=DOMAIN):
             return self.async_abort(reason=error)
 
         self._device_name = name
-        self._zeroconf_props = {
-            "friendly_name": props.get("friendly_name", name),
-        }
+        self._zeroconf_props = {"friendly_name": props.get("friendly_name", name)}
         return await self.async_step_zeroconf_confirm()
 
     async def async_step_zeroconf_confirm(self, user_input: dict[str, Any] | None = None) -> FlowResult:
@@ -169,18 +161,18 @@ class SenhusHubConfigFlow(ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlowWithReload:
         return SenhusHubOptionsFlow()
 
 
-class SenhusHubOptionsFlow(OptionsFlow):
+class SenhusHubOptionsFlow(OptionsFlowWithReload):
     """Handle options flow — configure display slots and layout."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         options = dict(self.config_entry.options)
 
         if user_input is not None:
-            options[CONF_LAYOUT] = user_input.get(CONF_LAYOUT, LAYOUT_DEFAULT)
+            options[CONF_LAYOUT] = user_input[CONF_LAYOUT]
             for slot in ALL_SLOTS:
                 options[slot] = {
                     CONF_ENTITY_ID: user_input.get(f"{slot}_entity") or "",
@@ -191,11 +183,10 @@ class SenhusHubOptionsFlow(OptionsFlow):
 
         def _slot_schema(slot: str) -> dict:
             cfg = options.get(slot, {})
-            entity_id = cfg.get(CONF_ENTITY_ID) or None
             return {
                 vol.Optional(
                     f"{slot}_entity",
-                    description={"suggested_value": entity_id},
+                    description={"suggested_value": cfg.get(CONF_ENTITY_ID) or None},
                 ): selector.EntitySelector(),
                 vol.Optional(
                     f"{slot}_label",
@@ -207,15 +198,14 @@ class SenhusHubOptionsFlow(OptionsFlow):
                 ): selector.TextSelector(),
             }
 
-        layout_options = [
-            selector.SelectOptionDict(value=v, label=_LAYOUT_LABELS[v])
-            for v in ALL_LAYOUTS
-        ]
-
         schema: dict = {
-            vol.Optional(CONF_LAYOUT, default=options.get(CONF_LAYOUT, LAYOUT_DEFAULT)): selector.SelectSelector(
+            vol.Required(
+                CONF_LAYOUT,
+                default=options.get(CONF_LAYOUT, LAYOUT_DEFAULT),
+            ): selector.SelectSelector(
                 selector.SelectSelectorConfig(
-                    options=layout_options,
+                    options=ALL_LAYOUTS,
+                    translation_key="layout",
                     mode=selector.SelectSelectorMode.LIST,
                 )
             ),

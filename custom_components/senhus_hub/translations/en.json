@@ -47,5 +47,13 @@
         }
       }
     }
+  },
+  "selector": {
+    "layout": {
+      "options": {
+        "default": "Default — 1 large left + 2 small right",
+        "three_rows": "Three rows — equal stacked rows"
+      }
+    }
   }
 }
