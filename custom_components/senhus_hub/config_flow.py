@@ -64,8 +64,8 @@ async def _try_connect(host: str, port: int, password: str) -> tuple[str | None,
         _LOGGER.exception("Unexpected error connecting to %s", host)
         return "unknown", None
 
-    # Verify it's a Senhus device (check project name prefix)
-    if info.project_name and not info.project_name.startswith(PROJECT_NAME_PREFIX):
+    # Verify it's a Senhus device — project_name must start with the prefix
+    if not (info.project_name and info.project_name.startswith(PROJECT_NAME_PREFIX)):
         return "not_senhus_hub", None
 
     return None, info.name
@@ -113,8 +113,11 @@ class SenhusHubConfigFlow(ConfigFlow, domain=DOMAIN):
         self._port = discovery_info.port or DEFAULT_PORT
         props = discovery_info.properties
 
-        # Reject non-Senhus devices immediately using mDNS TXT record — no connection needed
-        project_name = props.get("project_name", "")
+        # Reject non-Senhus devices via mDNS TXT record before connecting.
+        # Handle both str and bytes keys depending on HA/zeroconf version.
+        project_name = props.get("project_name") or props.get(b"project_name") or ""
+        if isinstance(project_name, bytes):
+            project_name = project_name.decode("utf-8", errors="ignore")
         if not project_name.startswith(PROJECT_NAME_PREFIX):
             return self.async_abort(reason="not_senhus_hub")
 
