@@ -113,6 +113,11 @@ class SenhusHubConfigFlow(ConfigFlow, domain=DOMAIN):
         self._port = discovery_info.port or DEFAULT_PORT
         props = discovery_info.properties
 
+        # Reject non-Senhus devices immediately using mDNS TXT record — no connection needed
+        project_name = props.get("project_name", "")
+        if not project_name.startswith(PROJECT_NAME_PREFIX):
+            return self.async_abort(reason="not_senhus_hub")
+
         await self.async_set_unique_id(props.get("mac", self._host))
         self._abort_if_unique_id_configured(updates={CONF_HOST: self._host})
 

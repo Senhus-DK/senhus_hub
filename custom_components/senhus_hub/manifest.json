@@ -1,7 +1,7 @@
 {
   "domain": "senhus_hub",
   "name": "Senhus Hub",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "documentation": "https://github.com/Senhus-DK/senhus_hub",
   "issue_tracker": "https://github.com/Senhus-DK/senhus_hub/issues",
   "dependencies": [],
