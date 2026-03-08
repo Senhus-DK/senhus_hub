@@ -1,0 +1,49 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add Senhus Hub",
+        "description": "Enter the address of your Senhus Hub device.",
+        "data": {
+          "host": "Host or IP address",
+          "port": "Port",
+          "password": "API password (if set)"
+        }
+      },
+      "zeroconf_confirm": {
+        "title": "Senhus Hub found",
+        "description": "Found **{name}** at `{host}`. Would you like to add it?"
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the device. Check the address and try again.",
+      "invalid_auth": "Invalid password.",
+      "not_senhus_hub": "This device is not a Senhus Hub.",
+      "unknown": "Unexpected error. Check the logs for details."
+    },
+    "abort": {
+      "already_configured": "This device is already configured.",
+      "cannot_connect": "Failed to connect to the device.",
+      "not_senhus_hub": "This device is not a Senhus Hub."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Configure display",
+        "description": "Choose which sensors to display and how to label them.",
+        "data": {
+          "slot_left_entity": "Left panel — Sensor",
+          "slot_left_label": "Left panel — Label",
+          "slot_left_unit": "Left panel — Unit",
+          "slot_right_top_entity": "Right top — Sensor",
+          "slot_right_top_label": "Right top — Label",
+          "slot_right_top_unit": "Right top — Unit",
+          "slot_right_bottom_entity": "Right bottom — Sensor",
+          "slot_right_bottom_label": "Right bottom — Label",
+          "slot_right_bottom_unit": "Right bottom — Unit"
+        }
+      }
+    }
+  }
+}

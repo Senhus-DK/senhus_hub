@@ -1,0 +1,13 @@
+{
+  "domain": "senhus_hub",
+  "name": "Senhus Hub",
+  "version": "1.0.0",
+  "documentation": "https://github.com/Senhus-DK/hacs-senhus-hub",
+  "issue_tracker": "https://github.com/Senhus-DK/hacs-senhus-hub/issues",
+  "dependencies": [],
+  "codeowners": ["@Senhus-DK"],
+  "requirements": ["aioesphomeapi>=13.0.0"],
+  "zeroconf": ["_esphomelib._tcp.local."],
+  "config_flow": true,
+  "iot_class": "local_push"
+}
