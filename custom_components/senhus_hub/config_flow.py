@@ -160,27 +160,26 @@ class SenhusHubConfigFlow(ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
-        return SenhusHubOptionsFlow(config_entry)
+        return SenhusHubOptionsFlow()
 
 
 class SenhusHubOptionsFlow(OptionsFlow):
     """Handle options flow — configure display slots."""
 
-    def __init__(self, config_entry: ConfigEntry) -> None:
-        self._options = dict(config_entry.options)
-
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
+        options = dict(self.config_entry.options)
+
         if user_input is not None:
             for slot in ALL_SLOTS:
-                self._options[slot] = {
+                options[slot] = {
                     CONF_ENTITY_ID: user_input.get(f"{slot}_entity", ""),
                     CONF_LABEL:     user_input.get(f"{slot}_label", _SLOT_DEFAULTS[slot][CONF_LABEL]),
                     CONF_UNIT:      user_input.get(f"{slot}_unit",  _SLOT_DEFAULTS[slot][CONF_UNIT]),
                 }
-            return self.async_create_entry(title="", data=self._options)
+            return self.async_create_entry(title="", data=options)
 
         def _slot_schema(slot: str) -> dict:
-            cfg = self._options.get(slot, {})
+            cfg = options.get(slot, {})
             return {
                 vol.Optional(
                     f"{slot}_entity",
