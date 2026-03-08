@@ -184,9 +184,7 @@ class SenhusHubOptionsFlow(OptionsFlow):
                 vol.Optional(
                     f"{slot}_entity",
                     default=cfg.get(CONF_ENTITY_ID, ""),
-                ): selector.EntitySelector(
-                    selector.EntitySelectorConfig(domain=["sensor", "input_number"])
-                ),
+                ): selector.EntitySelector(),
                 vol.Optional(
                     f"{slot}_label",
                     default=cfg.get(CONF_LABEL, _SLOT_DEFAULTS[slot][CONF_LABEL]),
