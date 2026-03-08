@@ -7,7 +7,7 @@ import voluptuous as vol
 from aioesphomeapi import APIClient, APIConnectionError, InvalidAuthAPIError
 
 from homeassistant.components import zeroconf
-from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlowWithReload
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, OptionsFlow
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_PASSWORD
 from homeassistant.core import callback
 from homeassistant.data_entry_flow import FlowResult
@@ -161,11 +161,11 @@ class SenhusHubConfigFlow(ConfigFlow, domain=DOMAIN):
 
     @staticmethod
     @callback
-    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlowWithReload:
+    def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
         return SenhusHubOptionsFlow()
 
 
-class SenhusHubOptionsFlow(OptionsFlowWithReload):
+class SenhusHubOptionsFlow(OptionsFlow):
     """Handle options flow — configure display slots and layout."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
