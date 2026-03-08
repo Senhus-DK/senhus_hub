@@ -180,19 +180,20 @@ class SenhusHubOptionsFlow(OptionsFlow):
 
         def _slot_schema(slot: str) -> dict:
             cfg = options.get(slot, {})
+            entity_id = cfg.get(CONF_ENTITY_ID) or None
             return {
                 vol.Optional(
                     f"{slot}_entity",
-                    default=cfg.get(CONF_ENTITY_ID, ""),
+                    description={"suggested_value": entity_id},
                 ): selector.EntitySelector(),
                 vol.Optional(
                     f"{slot}_label",
                     default=cfg.get(CONF_LABEL, _SLOT_DEFAULTS[slot][CONF_LABEL]),
-                ): str,
+                ): selector.TextSelector(),
                 vol.Optional(
                     f"{slot}_unit",
                     default=cfg.get(CONF_UNIT, _SLOT_DEFAULTS[slot][CONF_UNIT]),
-                ): str,
+                ): selector.TextSelector(),
             }
 
         schema: dict = {}
