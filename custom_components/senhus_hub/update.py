@@ -90,7 +90,7 @@ class SenhusHubUpdateEntity(UpdateEntity):
             _LOGGER.warning("Failed to check for firmware updates: %s", err)
 
     async def async_install(self, version: str | None, backup: bool, **kwargs) -> None:
-        """Download firmware from GitHub and OTA-flash the device."""
+        """Download firmware from GitHub and OTA-flash the device via HTTP."""
         if not self._download_url:
             _LOGGER.error("No firmware download URL — run an update check first")
             return
@@ -98,19 +98,25 @@ class SenhusHubUpdateEntity(UpdateEntity):
         self._attr_in_progress = True
         self.async_write_ha_state()
 
+        host = self._coordinator.entry.data["host"]
+        ota_url = f"http://{host}/update"
+
         try:
             session = async_get_clientsession(self.hass)
+
             async with session.get(self._download_url) as resp:
+                resp.raise_for_status()
                 firmware = await resp.read()
 
-            client = self._coordinator._client
-            if client is None:
-                raise RuntimeError("Device is not connected")
+            form = aiohttp.FormData()
+            form.add_field("update", firmware, filename="firmware.bin", content_type="application/octet-stream")
 
-            await client.send_ota(firmware)
+            async with session.post(ota_url, data=form, timeout=aiohttp.ClientTimeout(total=120)) as resp:
+                if resp.status != 200:
+                    text = await resp.text()
+                    raise RuntimeError(f"OTA endpoint returned {resp.status}: {text}")
+
             _LOGGER.info("OTA firmware update completed successfully")
-
-            # Optimistically update installed version
             self._installed_version = self._latest_version
 
         except Exception as err:

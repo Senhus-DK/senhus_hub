@@ -34,6 +34,6 @@ ESP_ENTITY_SLOT_LABEL = "slot{n}_label"
 ESP_ENTITY_SLOT_UNIT = "slot{n}_unit"
 
 # GitHub
-GITHUB_REPO = "Senhus-DK/hacs-senhus-hub"
+GITHUB_REPO = "Senhus-DK/senhus_hub"
 GITHUB_API_RELEASES = f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest"
 FIRMWARE_ASSET_NAME = "firmware.ota.bin"
