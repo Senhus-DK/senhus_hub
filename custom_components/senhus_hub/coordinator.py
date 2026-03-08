@@ -13,10 +13,13 @@ from .const import (
     ALL_SLOTS,
     CONF_ENTITY_ID,
     CONF_LABEL,
+    CONF_LAYOUT,
     CONF_UNIT,
+    ESP_ENTITY_LAYOUT,
     ESP_ENTITY_SLOT_VALUE,
     ESP_ENTITY_SLOT_LABEL,
     ESP_ENTITY_SLOT_UNIT,
+    LAYOUT_DEFAULT,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -65,6 +68,7 @@ class SenhusHubCoordinator:
 
     async def async_options_updated(self, hass: HomeAssistant, entry: ConfigEntry) -> None:
         """Called when user saves new options. Push updated config to device."""
+        await self._push_layout()
         await self._push_labels_and_units()
         await self._push_all_current_values()
         self._subscribe_ha_states()
@@ -82,6 +86,7 @@ class SenhusHubCoordinator:
 
         self._client.subscribe_states(lambda _state: None)  # keep connection alive
 
+        await self._push_layout()
         await self._push_labels_and_units()
         await self._push_all_current_values()
         self._subscribe_ha_states()
@@ -127,6 +132,10 @@ class SenhusHubCoordinator:
             self._unsub_ha = None
 
     # ── Push helpers ─────────────────────────────────────────────────────────
+
+    async def _push_layout(self) -> None:
+        layout = self.options.get(CONF_LAYOUT, LAYOUT_DEFAULT)
+        await self._set_text(ESP_ENTITY_LAYOUT, layout)
 
     async def _push_labels_and_units(self) -> None:
         if not self.connected:

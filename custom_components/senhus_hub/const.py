@@ -18,20 +18,19 @@ CONF_UNIT = "unit"
 
 # Card types
 CARD_CUSTOM = "custom"
-# Future: CARD_ENERGY = "energy"
-# Future: CARD_WEATHER = "weather"
 CONF_CARD_TYPE = "card_type"
 
 # Layout
 CONF_LAYOUT = "layout"
 LAYOUT_DEFAULT = "default"
-# Future: LAYOUT_THREE_PANEL = "three_panel"
+LAYOUT_THREE_ROWS = "three_rows"
+ALL_LAYOUTS = [LAYOUT_DEFAULT, LAYOUT_THREE_ROWS]
 
 # ESPHome text entity names expected on the device
-# The firmware exposes: slot1_value, slot1_label, slot1_unit, slot2_*, slot3_*
 ESP_ENTITY_SLOT_VALUE = "slot{n}_value"
 ESP_ENTITY_SLOT_LABEL = "slot{n}_label"
 ESP_ENTITY_SLOT_UNIT = "slot{n}_unit"
+ESP_ENTITY_LAYOUT = "display_layout"
 
 # GitHub
 GITHUB_REPO = "Senhus-DK/senhus_hub"

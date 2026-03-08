@@ -18,6 +18,7 @@ from .const import (
     DEFAULT_PORT,
     PROJECT_NAME_PREFIX,
     ALL_SLOTS,
+    ALL_LAYOUTS,
     SLOT_LEFT,
     SLOT_RIGHT_TOP,
     SLOT_RIGHT_BOTTOM,
@@ -36,6 +37,11 @@ _SLOT_DEFAULTS = {
     SLOT_LEFT:         {CONF_LABEL: "Price",  CONF_UNIT: ""},
     SLOT_RIGHT_TOP:    {CONF_LABEL: "Solar",  CONF_UNIT: "W"},
     SLOT_RIGHT_BOTTOM: {CONF_LABEL: "Grid",   CONF_UNIT: "W"},
+}
+
+_LAYOUT_LABELS = {
+    "default":    "Default — 1 large left + 2 small right",
+    "three_rows": "Three rows — equal stacked rows",
 }
 
 
@@ -101,9 +107,13 @@ class SenhusHubConfigFlow(ConfigFlow, domain=DOMAIN):
         return self.async_show_form(
             step_id="user",
             data_schema=vol.Schema({
-                vol.Required(CONF_HOST): str,
-                vol.Optional(CONF_PORT, default=DEFAULT_PORT): int,
-                vol.Optional(CONF_PASSWORD, default=""): str,
+                vol.Required(CONF_HOST): selector.TextSelector(),
+                vol.Optional(CONF_PORT, default=DEFAULT_PORT): selector.NumberSelector(
+                    selector.NumberSelectorConfig(min=1, max=65535, mode=selector.NumberSelectorMode.BOX)
+                ),
+                vol.Optional(CONF_PASSWORD, default=""): selector.TextSelector(
+                    selector.TextSelectorConfig(type=selector.TextSelectorType.PASSWORD)
+                ),
             }),
             errors=errors,
         )
@@ -164,15 +174,16 @@ class SenhusHubConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class SenhusHubOptionsFlow(OptionsFlow):
-    """Handle options flow — configure display slots."""
+    """Handle options flow — configure display slots and layout."""
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         options = dict(self.config_entry.options)
 
         if user_input is not None:
+            options[CONF_LAYOUT] = user_input.get(CONF_LAYOUT, LAYOUT_DEFAULT)
             for slot in ALL_SLOTS:
                 options[slot] = {
-                    CONF_ENTITY_ID: user_input.get(f"{slot}_entity", ""),
+                    CONF_ENTITY_ID: user_input.get(f"{slot}_entity") or "",
                     CONF_LABEL:     user_input.get(f"{slot}_label", _SLOT_DEFAULTS[slot][CONF_LABEL]),
                     CONF_UNIT:      user_input.get(f"{slot}_unit",  _SLOT_DEFAULTS[slot][CONF_UNIT]),
                 }
@@ -196,7 +207,19 @@ class SenhusHubOptionsFlow(OptionsFlow):
                 ): selector.TextSelector(),
             }
 
-        schema: dict = {}
+        layout_options = [
+            selector.SelectOptionDict(value=v, label=_LAYOUT_LABELS[v])
+            for v in ALL_LAYOUTS
+        ]
+
+        schema: dict = {
+            vol.Optional(CONF_LAYOUT, default=options.get(CONF_LAYOUT, LAYOUT_DEFAULT)): selector.SelectSelector(
+                selector.SelectSelectorConfig(
+                    options=layout_options,
+                    mode=selector.SelectSelectorMode.LIST,
+                )
+            ),
+        }
         for slot in ALL_SLOTS:
             schema.update(_slot_schema(slot))
 

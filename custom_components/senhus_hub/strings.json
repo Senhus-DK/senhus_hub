@@ -34,6 +34,7 @@
         "title": "Configure display",
         "description": "Choose which sensors to display and how to label them.",
         "data": {
+          "layout": "Display layout",
           "slot_left_entity": "Left panel — Sensor",
           "slot_left_label": "Left panel — Label",
           "slot_left_unit": "Left panel — Unit",
