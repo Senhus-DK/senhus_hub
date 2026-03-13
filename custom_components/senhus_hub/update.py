@@ -61,7 +61,9 @@ class SenhusHubUpdateEntity(UpdateEntity):
 
     @property
     def installed_version(self) -> str | None:
-        return self._installed_version
+        if self._coordinator.version:
+             return self._coordinator.version.lstrip("v")
+        return None
 
     @property
     def latest_version(self) -> str | None:
