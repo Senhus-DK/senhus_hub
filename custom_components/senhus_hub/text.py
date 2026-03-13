@@ -6,7 +6,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import (
     DOMAIN, MANUFACTURER, MODEL_HUB1, ALL_SLOTS,
-    CONF_ENTITY_ID, CONF_LABEL, CONF_UNIT
+    CONF_LABEL, CONF_UNIT
 )
 from .coordinator import SenhusHubCoordinator
 
@@ -31,7 +31,6 @@ async def async_setup_entry(
     entities = []
     
     for slot in ALL_SLOTS:
-        entities.append(SenhusHubTextEntity(coordinator, slot, CONF_ENTITY_ID, f"{_SLOT_NAMES[slot]} — Sensor ID", ""))
         entities.append(SenhusHubTextEntity(coordinator, slot, CONF_LABEL, f"{_SLOT_NAMES[slot]} — Label", _SLOT_DEFAULTS[slot][CONF_LABEL]))
         entities.append(SenhusHubTextEntity(coordinator, slot, CONF_UNIT, f"{_SLOT_NAMES[slot]} — Unit", _SLOT_DEFAULTS[slot][CONF_UNIT]))
 
@@ -50,7 +49,7 @@ class SenhusHubTextEntity(TextEntity):
         self._attr_name = name
         self._attr_unique_id = f"{coordinator.entry.entry_id}_{slot}_{conf_key}"
         self._attr_native_value = coordinator.options.get(slot, {}).get(conf_key, default_val)
-        self._attr_icon = "mdi:form-textbox" if conf_key != CONF_ENTITY_ID else "mdi:identifier"
+        self._attr_icon = "mdi:form-textbox"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -62,7 +61,6 @@ class SenhusHubTextEntity(TextEntity):
         )
 
     async def async_set_value(self, value: str) -> None:
-        """Update the value, save to config entry, and trigger ESPHome update."""
         self._attr_native_value = value
         self.async_write_ha_state()
 
@@ -71,7 +69,4 @@ class SenhusHubTextEntity(TextEntity):
         slot_cfg[self.conf_key] = value
         new_options[self.slot] = slot_cfg
 
-        # Updating the entry automatically triggers coordinator.async_options_updated
-        self.coordinator.hass.config_entries.async_update_entry(
-            self.coordinator.entry, options=new_options
-        )
+        self.coordinator.hass.config_entries.async_update_entry(self.coordinator.entry, options=new_options)
