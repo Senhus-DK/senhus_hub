@@ -1,7 +1,7 @@
 DOMAIN = "senhus_hub"
 MANUFACTURER = "Senhus"
 MODEL_HUB1 = "Hub1"
-PROJECT_NAME_PREFIX = "Senhus"
+PROJECT_NAME_PREFIX = "Senhus.Hub"
 
 DEFAULT_PORT = 6053
 

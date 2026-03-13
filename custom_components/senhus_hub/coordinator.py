@@ -83,6 +83,8 @@ class SenhusHubCoordinator:
         self._text_keys = {
             e.object_id: e.key for e in entities if isinstance(e, TextInfo)
         }
+        info = await self._client.device_info()
+        self.version = getattr(info, "project_version", None)
 
         self._client.subscribe_states(lambda _state: None)  # keep connection alive
 

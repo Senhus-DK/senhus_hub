@@ -162,11 +162,15 @@ class SenhusHubConfigFlow(ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
-        return SenhusHubOptionsFlow()
+        return SenhusHubOptionsFlow(config_entry)
 
 
 class SenhusHubOptionsFlow(OptionsFlow):
     """Handle options flow — configure display slots and layout."""
+
+    def __init__(self, config_entry: ConfigEntry) -> None:
+        """Initialize options flow."""
+        self.config_entry = config_entry
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> FlowResult:
         options = dict(self.config_entry.options)
