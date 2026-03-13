@@ -6,7 +6,7 @@ from homeassistant.core import HomeAssistant
 from .const import DOMAIN
 from .coordinator import SenhusHubCoordinator
 
-PLATFORMS = ["update", "sensor"]
+PLATFORMS = ["update"]
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
